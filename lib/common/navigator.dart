@@ -1,4 +1,5 @@
 import 'package:bett_box/enum/enum.dart';
+import 'package:bett_box/models/app.dart';
 import 'package:bett_box/state.dart';
 import 'package:flutter/material.dart';
 
