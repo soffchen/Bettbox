@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:bett_box/clash/clash.dart';
@@ -17,6 +18,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'controller.dart';
 import 'pages/pages.dart';
 
+String? _getSystemSansFont() {
+  if (Platform.isAndroid) return 'sans-serif';
+  if (Platform.isMacOS) return '.AppleSystemUIFont';
+  if (Platform.isWindows) return 'Segoe UI';
+  return 'sans-serif';
+}
+
 class Application extends ConsumerStatefulWidget {
   const Application({super.key});
 
@@ -31,10 +39,10 @@ class ApplicationState extends ConsumerState<Application>
 
   final _pageTransitionsTheme = const PageTransitionsTheme(
     builders: <TargetPlatform, PageTransitionsBuilder>{
-      TargetPlatform.android: CommonPageTransitionsBuilder(),
-      TargetPlatform.windows: CommonPageTransitionsBuilder(),
-      TargetPlatform.linux: CommonPageTransitionsBuilder(),
-      TargetPlatform.macOS: CommonPageTransitionsBuilder(),
+      TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+      TargetPlatform.windows: FadeForwardsPageTransitionsBuilder(),
+      TargetPlatform.linux: FadeForwardsPageTransitionsBuilder(),
+      TargetPlatform.macOS: FadeForwardsPageTransitionsBuilder(),
     },
   );
 
@@ -177,7 +185,9 @@ class ApplicationState extends ConsumerState<Application>
               appSettingProvider.select((state) => state.locale),
             );
             final themeProps = ref.watch(themeSettingProvider);
-            final fontFamily = themeProps.useHarmonyFont ? 'HarmonyOS_Sans' : null;
+            final fontFamily = themeProps.useHarmonyFont 
+                ? 'HarmonyOS_Sans' 
+                : _getSystemSansFont();
             
             return MaterialApp(
               debugShowCheckedModeBanner: false,
