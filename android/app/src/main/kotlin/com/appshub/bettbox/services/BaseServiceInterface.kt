@@ -80,7 +80,10 @@ fun Service.createMainActivityPendingIntent(requestCode: Int = 0): PendingIntent
 
 fun Service.createVpnConfigurePendingIntent(requestCode: Int = 1): PendingIntent {
     val intent = Intent().apply {
-        component = ComponentName(packageName, "com.appshub.bettbox.MainActivity")
+        component = resolveMainActivityComponent()
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+            Intent.FLAG_ACTIVITY_CLEAR_TOP or
+            Intent.FLAG_ACTIVITY_SINGLE_TOP
     }
     val flags = if (Build.VERSION.SDK_INT >= 31) {
         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT

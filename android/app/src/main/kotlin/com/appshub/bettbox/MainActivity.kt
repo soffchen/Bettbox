@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import com.appshub.bettbox.plugins.AppPlugin
 import com.appshub.bettbox.plugins.ServicePlugin
-import com.appshub.bettbox.plugins.TilePlugin
 import com.appshub.bettbox.plugins.VpnPlugin
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -33,7 +32,7 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        listOf(VpnPlugin, AppPlugin(), ServicePlugin(), TilePlugin()).forEach { plugin ->
+        listOf(VpnPlugin, AppPlugin(), ServicePlugin()).forEach { plugin ->
             if (flutterEngine.plugins.get(plugin.javaClass) == null) {
                 flutterEngine.plugins.add(plugin)
             }

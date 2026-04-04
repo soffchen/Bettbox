@@ -133,9 +133,7 @@ class ApplicationState extends ConsumerState<Application> {
         ),
       );
     }
-    return AndroidManager(
-      child: TileManager(child: SmartAutoStopManager(child: child)),
-    );
+    return AndroidManager(child: SmartAutoStopManager(child: child));
   }
 
   Widget _buildState(Widget child) {

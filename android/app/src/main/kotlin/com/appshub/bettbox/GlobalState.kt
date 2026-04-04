@@ -157,8 +157,7 @@ object GlobalState {
     suspend fun getText(text: String): String = getCurrentAppPlugin()?.getText(text) ?: ""
 
     fun getCurrentTilePlugin(): TilePlugin? {
-        val currentEngine = flutterEngine ?: serviceEngine
-        return currentEngine?.plugins?.get(TilePlugin::class.java) as? TilePlugin
+        return serviceEngine?.plugins?.get(TilePlugin::class.java) as? TilePlugin
     }
 
     fun getCurrentVPNPlugin(): VpnPlugin? {
