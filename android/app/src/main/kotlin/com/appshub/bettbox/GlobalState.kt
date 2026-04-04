@@ -172,8 +172,12 @@ object GlobalState {
 
     fun handleToggle() {
         if (!acquireToggleSlot()) return
-        if (!handleStart(skipDebounce = true)) {
-            handleStop(skipDebounce = true)
+        when (resolveRunState()) {
+            RunState.START -> handleStop(skipDebounce = true)
+            RunState.STOP -> handleStart(skipDebounce = true)
+            RunState.PENDING -> {
+                android.util.Log.d("GlobalState", "Ignore toggle while state is pending")
+            }
         }
     }
 

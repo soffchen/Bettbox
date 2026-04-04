@@ -79,16 +79,7 @@ fun Service.createMainActivityPendingIntent(requestCode: Int = 0): PendingIntent
 }
 
 fun Service.createVpnConfigurePendingIntent(requestCode: Int = 1): PendingIntent {
-    val intent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-    } ?: createMainActivityIntent()
-    
-    val flags = if (Build.VERSION.SDK_INT >= 31) {
-        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-    } else {
-        PendingIntent.FLAG_UPDATE_CURRENT
-    }
-    return PendingIntent.getActivity(this, 1001, intent, flags)
+    return createMainActivityPendingIntent(requestCode)
 }
 
 fun Service.createBettboxNotificationBuilder(): NotificationCompat.Builder {
