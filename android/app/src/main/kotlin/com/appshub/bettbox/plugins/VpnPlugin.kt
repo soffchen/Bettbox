@@ -444,7 +444,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         if (fd == null || (currentOptions.enable && fd <= 0)) {
             if (retry) {
                 android.util.Log.w("VpnPlugin", "VPN establish failed, retrying...")
-                delay(300)
+                delay(200)
                 try {
                     fd = bettBoxService?.start(currentOptions)
                 } catch (e: Exception) {
@@ -547,9 +547,8 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 android.util.Log.e("VpnPlugin", "cancel notification error: ${it.message}")
             }
 
+            GlobalState.updateIsStopping(false)
             scope.launch {
-                delay(300)
-                GlobalState.updateIsStopping(false)
                 delay(200)
                 withContext(Dispatchers.Main) {
                     GlobalState.handleTryDestroy()

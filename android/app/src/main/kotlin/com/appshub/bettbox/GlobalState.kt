@@ -84,14 +84,17 @@ object GlobalState {
     }
 
     fun resolveRunState(): RunState {
-        if (currentRunState == RunState.PENDING) {
-            return RunState.PENDING
-        }
-        return when (vpnServiceRunning) {
+        val vpnState = when (vpnServiceRunning) {
             true -> RunState.START
             false -> RunState.STOP
-            null -> currentRunState
+            null -> null
         }
+        
+        if (currentRunState == RunState.PENDING) {
+            return vpnState ?: RunState.PENDING
+        }
+        
+        return vpnState ?: currentRunState
     }
 
     private fun MutableLiveData<RunState>.postValueSafe(value: RunState) = try {
@@ -128,21 +131,24 @@ object GlobalState {
     }
 
     fun isCurrentlyStopping(): Boolean {
-        if (isStopping) return true
         return runCatching {
             val sp = BettboxApplication.getAppContext()
                 .getSharedPreferences("vpn_state", android.content.Context.MODE_PRIVATE)
             val ts = sp.getLong("stop_lock_ts", 0L)
-            if (ts == 0L) return false
+            if (ts == 0L) {
+                isStopping = false
+                return@runCatching false
+            }
 
             val now = System.currentTimeMillis()
             if (now - ts > STOP_LOCK_TIMEOUT_MS) {
                 sp.edit().remove("stop_lock_ts").apply()
+                isStopping = false
                 false
             } else {
                 true
             }
-        }.getOrDefault(false)
+        }.getOrDefault(isStopping)
     }
 
     fun getCurrentAppPlugin(): AppPlugin? {
@@ -173,24 +179,48 @@ object GlobalState {
 
     fun handleStart(skipDebounce: Boolean = false): Boolean {
         if (!skipDebounce && !acquireToggleSlot()) return false
-        if (currentRunState != RunState.STOP) return false
+        
+        val resolved = resolveRunState()
+        if (resolved == RunState.START) {
+            android.util.Log.d("GlobalState", "Already started, refreshing...")
+            runLock.withLock {
+                getCurrentTilePlugin()?.handleStart()
+            }
+            return true
+        }
 
+        android.util.Log.i("GlobalState", "Triggering START (current: $currentRunState, resolved: $resolved)")
         updateRunState(RunState.PENDING)
         startPendingTimeout()
         runLock.withLock {
-            getCurrentTilePlugin()?.handleStart() ?: initServiceEngine(listOf("quick"))
+            val tilePlugin = getCurrentTilePlugin()
+            if (tilePlugin != null) {
+                tilePlugin.handleStart()
+            } else {
+                android.util.Log.d("GlobalState", "TilePlugin is null, initializing engine")
+                initServiceEngine(listOf("quick"))
+            }
         }
         return true
     }
 
     fun handleStop(skipDebounce: Boolean = false) {
         if (!skipDebounce && !acquireToggleSlot()) return
-        if (currentRunState != RunState.START) return
+        
+        val resolved = resolveRunState()
+        if (resolved == RunState.STOP) {
+            android.util.Log.d("GlobalState", "Already stopped")
+            return
+        }
 
+        android.util.Log.i("GlobalState", "Triggering STOP (current: $currentRunState, resolved: $resolved)")
         updateRunState(RunState.PENDING)
         startPendingTimeout()
         runLock.withLock {
-            getCurrentTilePlugin()?.handleStop()
+            getCurrentTilePlugin()?.handleStop() ?: run {
+                android.util.Log.w("GlobalState", "TilePlugin is null during stop, resetting state")
+                updateRunState(RunState.STOP)
+            }
         }
     }
 

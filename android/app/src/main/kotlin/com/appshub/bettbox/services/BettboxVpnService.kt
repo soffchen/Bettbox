@@ -44,6 +44,8 @@ class BettboxVpnService : VpnService(), BaseServiceInterface {
     @Volatile
     private var isForegroundStarted = false
 
+    private var vpnInterface: android.os.ParcelFileDescriptor? = null
+
     override fun onCreate() {
         super.onCreate()
         GlobalState.initServiceEngine()
@@ -104,9 +106,11 @@ class BettboxVpnService : VpnService(), BaseServiceInterface {
             setHttpProxy(ProxyInfo.buildDirectProxy("127.0.0.1", options.port, proxyBypassList))
         }
 
-        establish()?.detachFd()?.also {
+        val pfd = establish()
+        if (pfd != null) {
+            vpnInterface = pfd
             GlobalState.markVpnEstablished()
-            return it
+            return pfd.fd
         }
         GlobalState.markVpnStopped()
         Log.e(TAG, "Establish VPN rejected by system")
@@ -131,6 +135,11 @@ class BettboxVpnService : VpnService(), BaseServiceInterface {
         isStopped = true
         isForegroundStarted = false
         GlobalState.markVpnStopped()
+
+        runCatching {
+            vpnInterface?.close()
+            vpnInterface = null
+        }.onFailure { Log.e(TAG, "Failed to close VPN interface: ${it.message}") }
 
         runCatching { Core.stopTun() }
             .onFailure { Log.e(TAG, "Failed to stop TUN: ${it.message}") }
