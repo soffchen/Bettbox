@@ -95,6 +95,7 @@
                 <action android:name="${applicationId}.action.START" />
                 <action android:name="${applicationId}.action.STOP" />
                 <action android:name="${applicationId}.action.CHANGE" />
+                <action android:name="${applicationId}.action.CONFIGURE" />
             </intent-filter>
         </activity>
 

@@ -174,8 +174,16 @@ class ApplicationState extends ConsumerState<Application> {
               appSettingProvider.select((state) => state.locale),
             );
             final themeProps = ref.watch(themeSettingProvider);
-            final fontFamily = themeProps.useHarmonyFont ? 'HarmonyOS_Sans' : null;
-            final fontFamilyFallback = system.isAndroid ? const <String>['system-ui'] : null;
+            final fontFamily = themeProps.useHarmonyFont 
+                ? 'HarmonyOS_Sans' 
+                : (system.isAndroid ? 'sans-serif-medium' : null);
+            final fontFamilyFallback = system.isAndroid 
+                ? const <String>[
+                    'sans-serif-medium',
+                    'Noto Sans CJK SC',
+                    'Roboto',
+                  ] 
+                : null;
             
             return MaterialApp(
               debugShowCheckedModeBanner: false,
