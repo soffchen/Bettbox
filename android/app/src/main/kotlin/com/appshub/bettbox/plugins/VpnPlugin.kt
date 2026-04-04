@@ -529,6 +529,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     BettboxApplication.getAppContext().unbindService(connection)
                     isBind = false
                 }
+                bettBoxService = null
             }.onFailure {
                 android.util.Log.e("VpnPlugin", "unbindService error: ${it.message}")
             }

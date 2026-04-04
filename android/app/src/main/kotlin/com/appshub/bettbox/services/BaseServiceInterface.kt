@@ -79,12 +79,7 @@ fun Service.createMainActivityPendingIntent(requestCode: Int = 0): PendingIntent
 }
 
 fun Service.createVpnConfigurePendingIntent(requestCode: Int = 1): PendingIntent {
-    val intent = Intent().apply {
-        component = resolveMainActivityComponent()
-        flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-            Intent.FLAG_ACTIVITY_CLEAR_TOP or
-            Intent.FLAG_ACTIVITY_SINGLE_TOP
-    }
+    val intent = createMainActivityIntent()
     val flags = if (Build.VERSION.SDK_INT >= 31) {
         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
     } else {
@@ -113,9 +108,15 @@ fun Service.ensureNotificationChannel() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
     val manager = getSystemService(NotificationManager::class.java)
     if (manager?.getNotificationChannel(GlobalState.NOTIFICATION_CHANNEL) == null) {
-        manager?.createNotificationChannel(
-            NotificationChannel(GlobalState.NOTIFICATION_CHANNEL, "Foreground Service", NotificationManager.IMPORTANCE_LOW)
-        )
+        val channel = NotificationChannel(
+            GlobalState.NOTIFICATION_CHANNEL,
+            "VPN Service",
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = "Bettbox Foreground Service"
+            setShowBadge(false)
+        }
+        manager?.createNotificationChannel(channel)
     }
 }
 
