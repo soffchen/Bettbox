@@ -19,7 +19,6 @@ import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
-import androidx.core.graphics.drawable.IconCompat
 import com.appshub.bettbox.BettboxApplication
 import com.appshub.bettbox.GlobalState
 import com.appshub.bettbox.R
@@ -133,14 +132,8 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
         scope.launch(Dispatchers.IO) { cleanIconCache() }
     }
 
-    private fun initShortcuts(label: String) {
-        val iconRes = if (isSystemInDarkMode()) R.mipmap.ic_launcher_round else R.mipmap.ic_launcher_round_light
-        val shortcut = ShortcutInfoCompat.Builder(BettboxApplication.getAppContext(), "toggle")
-            .setShortLabel(label)
-            .setIcon(IconCompat.createWithResource(BettboxApplication.getAppContext(), iconRes))
-            .setIntent(BettboxApplication.getAppContext().getActionIntent("CHANGE"))
-            .build()
-        ShortcutManagerCompat.setDynamicShortcuts(BettboxApplication.getAppContext(), listOf(shortcut))
+    private fun initShortcuts() {
+        ShortcutManagerCompat.removeAllDynamicShortcuts(BettboxApplication.getAppContext())
     }
 
     private fun isSystemInDarkMode(): Boolean {
@@ -176,7 +169,7 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
                 result.success(true)
             }
             "initShortcuts" -> {
-                initShortcuts(call.arguments as String)
+                initShortcuts()
                 result.success(true)
             }
             "getPackages" -> scope.launch {

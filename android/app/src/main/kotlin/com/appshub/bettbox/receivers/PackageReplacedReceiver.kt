@@ -23,6 +23,7 @@ class PackageReplacedReceiver : BroadcastReceiver() {
                 .apply()
             if (Build.VERSION.SDK_INT >= 36) { 
                 android.net.VpnService.prepare(context)
+                android.net.VpnService.prepare(context)
             } 
         }.onFailure { 
             Log.e(TAG, "Reset failed", it) 

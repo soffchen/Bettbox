@@ -17,6 +17,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'controller.dart';
 import 'pages/pages.dart';
 
+const List<String> fontFamilyFallback = [];
+
 class Application extends ConsumerStatefulWidget {
   const Application({super.key});
 
@@ -80,7 +82,7 @@ class ApplicationState extends ConsumerState<Application> {
     await globalState.appController.init();
     globalState.appController.initLink();
     if (system.isAndroid) {
-      app.initShortcuts();
+      unawaited(app.initShortcuts());
     }
   }
 
@@ -174,16 +176,7 @@ class ApplicationState extends ConsumerState<Application> {
               appSettingProvider.select((state) => state.locale),
             );
             final themeProps = ref.watch(themeSettingProvider);
-            final fontFamily = themeProps.useHarmonyFont 
-                ? 'HarmonyOS_Sans' 
-                : (system.isAndroid ? 'sans-serif-medium' : null);
-            final fontFamilyFallback = system.isAndroid 
-                ? const <String>[
-                    'sans-serif-medium',
-                    'Noto Sans CJK SC',
-                    'Roboto',
-                  ] 
-                : null;
+            final fontFamily = themeProps.useHarmonyFont ? 'HarmonyOS_Sans' : null;
             
             return MaterialApp(
               debugShowCheckedModeBanner: false,
@@ -194,10 +187,24 @@ class ApplicationState extends ConsumerState<Application> {
                 GlobalCupertinoLocalizations.delegate,
                 GlobalWidgetsLocalizations.delegate,
               ],
-              builder: (_, child) {
+              builder: (context, child) {
+                final effectiveChild = system.isAndroid
+                    ? Localizations.override(
+                        context: context,
+                        locale: utils.getLocaleForString(locale),
+                        child: DefaultTextStyle.merge(
+                          style: TextStyle(
+                            fontFamily: fontFamily ?? 'sans-serif',
+                            fontFamilyFallback: fontFamilyFallback,
+                            locale: utils.getLocaleForString(locale),
+                          ),
+                          child: child!,
+                        ),
+                      )
+                    : child!;
                 return AppEnvManager(
                   child: _buildApp(
-                    AppSidebarContainer(child: _buildPlatformApp(child!)),
+                    AppSidebarContainer(child: _buildPlatformApp(effectiveChild)),
                   ),
                 );
               },

@@ -197,13 +197,8 @@ object GlobalState {
         updateRunState(RunState.PENDING)
         startPendingTimeout()
         runLock.withLock {
-            val tilePlugin = getCurrentTilePlugin()
-            if (tilePlugin != null) {
-                tilePlugin.handleStart()
-            } else {
-                android.util.Log.d("GlobalState", "TilePlugin is null, initializing engine")
-                initServiceEngine(listOf("quick"))
-            }
+            destroyServiceEngine()
+            initServiceEngine(listOf("quick"))
         }
         return true
     }

@@ -99,8 +99,6 @@ class BettboxVpnService : VpnService(), BaseServiceInterface {
         setBlocking(false)
         if (Build.VERSION.SDK_INT >= 29) setMetered(false)
         if (options.allowBypass) allowBypass()
-        setConfigureIntent(createVpnConfigurePendingIntent())
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && options.systemProxy) {
             val proxyBypassList = (options.bypassDomain + LOCAL_PROXY_BYPASS_LIST).distinct()
             setHttpProxy(ProxyInfo.buildDirectProxy("127.0.0.1", options.port, proxyBypassList))
