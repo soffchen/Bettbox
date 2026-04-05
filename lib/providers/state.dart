@@ -13,6 +13,7 @@ import 'config.dart';
 part 'generated/state.g.dart';
 
 final nativeVpnRunningProvider = StateProvider<bool?>((ref) => null);
+final androidSdkVersionProvider = StateProvider<int?>((ref) => null);
 
 final isCoreRunningProvider = Provider<bool>((ref) {
   final nativeRunning = ref.watch(nativeVpnRunningProvider);

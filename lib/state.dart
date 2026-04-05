@@ -239,7 +239,10 @@ class GlobalState {
   }
 
   Future updateStartTime() async {
-    startTime = await clashLib?.getRunTime();
+    final nativeStartTime = await clashLib?.getRunTime();
+    if (nativeStartTime != null) {
+      startTime = nativeStartTime;
+    }
   }
 
   void updateWakelockState(bool enabled) {

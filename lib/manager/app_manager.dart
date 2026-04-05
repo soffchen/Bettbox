@@ -142,9 +142,13 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.hidden) {
       globalState.appController.savePreferences();
-      await globalState.handleBackground();
+      if (!system.isLinux) {
+        await globalState.handleBackground();
+      }
     } else if (state == AppLifecycleState.resumed) {
-      globalState.handleForeground();
+      if (!system.isLinux) {
+        globalState.handleForeground();
+      }
       render?.active();
       await globalState.resumeForegroundUpdates();
       await globalState.appController.syncWakelockIfNeeded();

@@ -83,6 +83,16 @@ class ApplicationState extends ConsumerState<Application> {
     globalState.appController.initLink();
     if (system.isAndroid) {
       unawaited(app.initShortcuts());
+      final androidVersion = await system.version;
+      ref.read(androidSdkVersionProvider.notifier).state = androidVersion;
+      if (androidVersion >= 36) {
+        final themeProps = ref.read(themeSettingProvider);
+        if (!themeProps.useHarmonyFont) {
+          ref.read(themeSettingProvider.notifier).updateState(
+                (state) => state.copyWith(useHarmonyFont: true),
+              );
+        }
+      }
     }
   }
 
@@ -176,14 +186,7 @@ class ApplicationState extends ConsumerState<Application> {
               appSettingProvider.select((state) => state.locale),
             );
             final themeProps = ref.watch(themeSettingProvider);
-            
-            final fontFamilyFallback = system.isAndroid 
-                ? const <String>['sans-serif'] 
-                : null;
-            
-            final fontFamily = themeProps.useHarmonyFont 
-                ? 'HarmonyOS_Sans' 
-                : (system.isAndroid ? 'sans-serif' : null);
+            final fontFamily = themeProps.useHarmonyFont ? 'HarmonyOS_Sans' : null;
             
             return MaterialApp(
               debugShowCheckedModeBanner: false,
@@ -195,23 +198,9 @@ class ApplicationState extends ConsumerState<Application> {
                 GlobalWidgetsLocalizations.delegate,
               ],
               builder: (context, child) {
-                final effectiveChild = system.isAndroid
-                    ? Localizations.override(
-                        context: context,
-                        locale: utils.getLocaleForString(locale),
-                        child: DefaultTextStyle.merge(
-                          style: TextStyle(
-                            fontFamily: fontFamily,
-                            fontFamilyFallback: fontFamilyFallback,
-                            locale: utils.getLocaleForString(locale),
-                          ),
-                          child: child!,
-                        ),
-                      )
-                    : child!;
                 return AppEnvManager(
                   child: _buildApp(
-                    AppSidebarContainer(child: _buildPlatformApp(effectiveChild)),
+                    AppSidebarContainer(child: _buildPlatformApp(child!)),
                   ),
                 );
               },
@@ -228,7 +217,6 @@ class ApplicationState extends ConsumerState<Application> {
                   primaryColor: themeProps.primaryColor,
                 ),
                 fontFamily: fontFamily,
-                fontFamilyFallback: fontFamilyFallback,
               ),
               darkTheme: ThemeData(
                 useMaterial3: true,
@@ -238,7 +226,6 @@ class ApplicationState extends ConsumerState<Application> {
                   primaryColor: themeProps.primaryColor,
                 ).toPureBlack(themeProps.pureBlack),
                 fontFamily: fontFamily,
-                fontFamilyFallback: fontFamilyFallback,
               ),
               home: child!,
             );
