@@ -176,7 +176,14 @@ class ApplicationState extends ConsumerState<Application> {
               appSettingProvider.select((state) => state.locale),
             );
             final themeProps = ref.watch(themeSettingProvider);
-            final fontFamily = themeProps.useHarmonyFont ? 'HarmonyOS_Sans' : null;
+            
+            final fontFamilyFallback = system.isAndroid 
+                ? const <String>['sans-serif'] 
+                : null;
+            
+            final fontFamily = themeProps.useHarmonyFont 
+                ? 'HarmonyOS_Sans' 
+                : (system.isAndroid ? 'sans-serif' : null);
             
             return MaterialApp(
               debugShowCheckedModeBanner: false,
@@ -194,7 +201,7 @@ class ApplicationState extends ConsumerState<Application> {
                         locale: utils.getLocaleForString(locale),
                         child: DefaultTextStyle.merge(
                           style: TextStyle(
-                            fontFamily: fontFamily ?? 'sans-serif',
+                            fontFamily: fontFamily,
                             fontFamilyFallback: fontFamilyFallback,
                             locale: utils.getLocaleForString(locale),
                           ),
